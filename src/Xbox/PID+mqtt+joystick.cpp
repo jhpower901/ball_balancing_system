@@ -16,7 +16,7 @@
 #define TOPIC_SUB_CMD "ballbalancer/cmd"
 
 #define SPIKE_THRESH 20      // 터치포인트 급변 필터링 임계값
-#define STEP_GAIN 3.0f                 // 조이스틱 1.0일 때 호출 한 번당 타깃 이동 거리
+#define STEP_GAIN 10.0f                 // 조이스틱 1.0일 때 호출 한 번당 타깃 이동 거리
 #define STATUS_PUBLISH_INTERVAL_MS 20  // 상태 MQTT 발행 주기
 #define CONTROL_LOOP_INTERVAL_MS 10.0  // 제어 루프 주기
 
@@ -49,7 +49,7 @@ SemaphoreHandle_t statusMutex;
 #define YM 41
 #define XP 42
 #define ZERO_POINT_CALIBRATION_X 0
-#define ZERO_POINT_CALIBRATION_Y 0
+#define ZERO_POINT_CALIBRATION_Y -10
 
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 360);
 
@@ -59,7 +59,7 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 360);
 Servo xServo;
 Servo yServo;
 const int flatXAngle = 95;    // 서보 중립각(초기 설정 calibration중 조정 가능)
-const int flatYAngle = 95;    // 서보 중립각(초기 설정 calibration중 조정 가능)
+const int flatYAngle = 97;    // 서보 중립각(초기 설정 calibration중 조정 가능)
 
 // ===== Xbox 컨트롤러 연결 상태 ======
 bool wasConnected = false;
@@ -191,8 +191,8 @@ TupleInt getPoint() {
    }
 
    point_buffer[2] = p;
-   actual_pose.x = map(clip(p.x + ZERO_POINT_CALIBRATION_X, 150, 890), 150, 890, -130, 130);
-   actual_pose.y = map(clip(p.y + ZERO_POINT_CALIBRATION_Y, 150, 890), 150, 890, -100, 100);
+   actual_pose.x = map(clip(p.x, 150, 890), 150, 890, -130, 130) + ZERO_POINT_CALIBRATION_X;
+   actual_pose.y = map(clip(p.y, 150, 890), 150, 890, -100, 100) + ZERO_POINT_CALIBRATION_Y;
    return actual_pose;
 }
 
@@ -681,7 +681,7 @@ void controlTask(void *parameter)
             Serial.print(xOutput); Serial.print(","); Serial.print(yOutput);
             Serial.printf(") [Joystick]: %s", wasConnected ? "Connected" : "Disconnected");
             
-            Serial.print(") | PID_X:(");
+            Serial.print(" | PID_X:(");
             Serial.print(kp_x, 2); Serial.print(",");
             Serial.print(ki_x, 3); Serial.print(",");
             Serial.print(kd_x, 2);
@@ -735,7 +735,6 @@ void setup(void)
    xTaskCreatePinnedToCore(controlTask, "Control", 10000, NULL, 2, NULL, 1);
 }
 
-void loop(void)
-{
+void loop(void) {
    vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
