@@ -8,6 +8,8 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include "secrets.h"
+
 
 #define UUID "esp32-balance-001"
 #define VERSION "1.0.0"
@@ -16,10 +18,10 @@
 #define TOPIC_SUB_CMD "ballbalancer/cmd"
 
 // ====== Wi-Fi & MQTT 설정 ======
-const char *ssid = WIFI_SSID;
-const char *password = WIFI_PASSWORD;
-const char *MQTT_HOST = "anzam.kr"; // 로컬이면 "192.168.x.x"
-const uint16_t MQTT_PORT = 1883;
+const char *ssid      = WIFI_SSID;
+const char *password  = WIFI_PASSWORD;
+const char *MQTT_HOST = MQTT_HOSTNAME;
+const uint16_t MQTT_PORT = MQTT_PORT_NUM;
 
 
 // ====== 전역 ======

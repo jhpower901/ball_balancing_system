@@ -7,13 +7,15 @@
 #include <ArduinoJson.h>
 #include <ESP32Servo.h>
 #include <BLEGamepadClient.h>
+#include "secrets.h"
 
 
 #define UUID "esp32-balance-001"
-#define VERSION "1.0.0"
+#define VERSION "final-2025.12.05."
 #define TOPIC_PUB_HELLO "ballbalancer/hello"
 #define TOPIC_PUB_STATUS "ballbalancer/status"
 #define TOPIC_SUB_CMD "ballbalancer/cmd"
+
 
 #define SPIKE_THRESH 20      // 터치포인트 급변 필터링 임계값
 #define STEP_GAIN 10.0f                 // 조이스틱 1.0일 때 호출 한 번당 타깃 이동 거리
@@ -29,10 +31,10 @@
 #define KD_Y 0.12f
 
 // ====== Wi-Fi & MQTT 설정 ======
-const char *ssid = "jsj";
-const char *password = "19960828";
-const char *MQTT_HOST = "anzam.kr";
-const uint16_t MQTT_PORT = 1883;
+const char *ssid      = WIFI_SSID;
+const char *password  = WIFI_PASSWORD;
+const char *MQTT_HOST = MQTT_HOSTNAME;
+const uint16_t MQTT_PORT = MQTT_PORT_NUM;
 
 // ====== 전역 객체 ======
 WiFiClient espClient;
@@ -59,7 +61,7 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 360);
 Servo xServo;
 Servo yServo;
 const int flatXAngle = 95;    // 서보 중립각(초기 설정 calibration중 조정 가능)
-const int flatYAngle = 97;    // 서보 중립각(초기 설정 calibration중 조정 가능)
+const int flatYAngle = 96;    // 서보 중립각(초기 설정 calibration중 조정 가능)
 
 // ===== Xbox 컨트롤러 연결 상태 ======
 bool wasConnected = false;
@@ -88,7 +90,7 @@ volatile ControlMode g_controlMode = CTR_MODE_MQTT;
 // ====== MQTT 전송용 데이터 ======
 struct Hello {
    char device_id[100] = UUID;
-   char firmware[10] = VERSION;
+   char firmware[20] = VERSION;
    struct PID_const pid_const = {
       KP_X, KI_X, KD_X,
       KP_Y, KI_Y, KD_Y
@@ -357,11 +359,40 @@ void updateStatusFromJoystick(XboxControlsEvent e) {
          status.target_pose.y = 0;
          Serial.println("[Joystick] Target pose reset to (0, 0) by RSB");
       }
+      //왼쪽 위 130,80
+      if (e.buttonX) {
+         status.target_pose.x = -110;
+         status.target_pose.y = 60;
+         Serial.println("[Joystick] Target pose set to (130,80) by X");
+      }
+      //오른쪽 위 -130, 80
+      if (e.buttonY) {
+         status.target_pose.x = 110;
+         status.target_pose.y = 60;
+         Serial.println("[Joystick] Target pose set to (-130,80) by Y");
+      }
+      //왼쪽 아래 130, -100
+      if (e.buttonA) {
+         status.target_pose.x = -110;
+         status.target_pose.y = -60;
+         Serial.println("[Joystick] Target pose reset to (0, -100) by A");
+      }
+      //오른쪽 아래 -130, -100
+      if (e.buttonB) {
+         status.target_pose.x = 110;
+         status.target_pose.y = -60;
+         Serial.println("[Joystick] Target pose reset to (-130, -100) by B");
+      }
 
       // 4) 모드가 joystick일 때만 타깃을 조이스틱으로 이동
       if (strcmp(status.ctr_mode, "joystick") == 0) {
-         float deltaX = e.rightStickX * STEP_GAIN;
-         float deltaY = e.rightStickY * STEP_GAIN;
+         float rightX = e.rightStickX;
+         float rightY = e.rightStickY;
+         if (rightX > -0.1f && rightX < 0.1f) rightX = 0.0f;
+         if (rightY > -0.1f && rightY < 0.1f) rightY = 0.0f;
+
+         float deltaX = rightX * STEP_GAIN;
+         float deltaY = rightY * STEP_GAIN;
 
          float newX = status.target_pose.x + deltaX;
          float newY = status.target_pose.y + deltaY;

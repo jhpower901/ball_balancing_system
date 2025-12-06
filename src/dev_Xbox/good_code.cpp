@@ -5,6 +5,7 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <ESP32Servo.h>
+#include "secrets.h"
 
 #define UUID "esp32-balance-001"
 #define VERSION "1.0.0"
@@ -13,10 +14,10 @@
 #define TOPIC_SUB_CMD "ballbalancer/cmd"
 
 // ====== Wi-Fi & MQTT 설정 ======
-const char *ssid = "jsj";
-const char *password = "19960828";
-const char *MQTT_HOST = "anzam.kr";
-const uint16_t MQTT_PORT = 1883;
+const char *ssid      = WIFI_SSID;
+const char *password  = WIFI_PASSWORD;
+const char *MQTT_HOST = MQTT_HOSTNAME;
+const uint16_t MQTT_PORT = MQTT_PORT_NUM;
 
 // ====== 전역 객체 ======
 WiFiClient espClient;

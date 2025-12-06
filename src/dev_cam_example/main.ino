@@ -1,7 +1,9 @@
 #include <WiFi.h>
+#include "secrets.h"
 
-const char* ssid = WIFI_SSID;
-const char* password = WIFI_PASSWORD;
+
+const char *ssid      = WIFI_SSID;
+const char *password  = WIFI_PASSWORD;
 
 #ifdef PIN_LED_RGB
 #define BUILTIN_RGBLED_PIN PIN_LED_RGB
