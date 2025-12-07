@@ -124,15 +124,6 @@ float Px = 0, Ix = 0, Dx = 0;
 float Py = 0, Iy = 0, Dy = 0;
 float previousErrorX = 0, previousErrorY = 0;
 
-// ====== 입력 스무딩 ======
-const int inputWindowSize = 10;
-float filteredX = 0;
-float filteredY = 0;
-float sumX = 0;
-float sumY = 0;
-float readingsX[inputWindowSize];
-float readingsY[inputWindowSize];
-
 // ====== 유효성 체크 ======
 int numValidPoints = 0;
 int numInvalidPoints = 0;
@@ -398,8 +389,8 @@ void updateStatusFromJoystick(XboxControlsEvent e) {
          float newY = status.target_pose.y + deltaY;
 
          // 범위 클리핑
-         clip2(newX, -MAX_TARGET_X, MAX_TARGET_X);
-         clip2(newY, -MAX_TARGET_Y, MAX_TARGET_Y);
+         newX = clip2(newX, -MAX_TARGET_X, MAX_TARGET_X);
+         newY = clip2(newY, -MAX_TARGET_Y, MAX_TARGET_Y);
 
          status.target_pose.x = (int16_t)newX;
          status.target_pose.y = (int16_t)newY;

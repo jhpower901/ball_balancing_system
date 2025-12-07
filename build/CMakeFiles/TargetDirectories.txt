@@ -1,2 +1,0 @@
-C:/git/ball_balancing_platform/build/CMakeFiles/ALL_BUILD.dir
-C:/git/ball_balancing_platform/build/CMakeFiles/ZERO_CHECK.dir
