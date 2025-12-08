@@ -117,6 +117,12 @@ struct Status {
    TupleFloat joystick_val = {0.0, 0.0};
    uint32_t time = 0;
    char ctr_mode[20] = "joystick";
+   char device_id[100] = UUID;
+   char firmware[20] = VERSION;
+   struct {
+      int width = 260;
+      int height = 200;
+   } field_size;
 } status;
 
 // ====== PID 제어 변수 ======
