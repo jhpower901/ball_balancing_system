@@ -232,41 +232,48 @@ String helloToJson(const Hello& h) {
 }
 
 String statusToJson(const Status& s) {
-  JsonDocument doc;
+   JsonDocument doc;
 
-  if (xSemaphoreTake(statusMutex, portMAX_DELAY) == pdTRUE) {
-     JsonObject real = doc["real_pose"].to<JsonObject>();
-     real["x"] = s.real_pose.x;
-     real["y"] = s.real_pose.y;
+   if (xSemaphoreTake(statusMutex, portMAX_DELAY) == pdTRUE) {
+      JsonObject real = doc["real_pose"].to<JsonObject>();
+      real["x"] = s.real_pose.x;
+      real["y"] = s.real_pose.y;
 
-     JsonObject target = doc["target_pose"].to<JsonObject>();
-     target["x"] = s.target_pose.x;
-     target["y"] = s.target_pose.y;
+      JsonObject target = doc["target_pose"].to<JsonObject>();
+      target["x"] = s.target_pose.x;
+      target["y"] = s.target_pose.y;
 
-     JsonObject err = doc["error"].to<JsonObject>();
-     err["x"] = s.error.x;
-     err["y"] = s.error.y;
+      JsonObject err = doc["error"].to<JsonObject>();
+      err["x"] = s.error.x;
+      err["y"] = s.error.y;
 
-     JsonObject pose = doc["platform_pose"].to<JsonObject>();
-     pose["roll"]  = (int)s.platform_pose.x;
-     pose["pitch"] = (int)s.platform_pose.y;
+      JsonObject pose = doc["platform_pose"].to<JsonObject>();
+      pose["roll"]  = (int)s.platform_pose.x;
+      pose["pitch"] = (int)s.platform_pose.y;
 
-     JsonObject pid = doc["pid_const"].to<JsonObject>();
-     pid["kp_x"] = s.pid_const.kp_x;
-     pid["ki_x"] = s.pid_const.ki_x;
-     pid["kd_x"] = s.pid_const.kd_x;
-     pid["kp_y"] = s.pid_const.kp_y;
-     pid["ki_y"] = s.pid_const.ki_y;
-     pid["kd_y"] = s.pid_const.kd_y;
+      JsonObject pid = doc["pid_const"].to<JsonObject>();
+      pid["kp_x"] = s.pid_const.kp_x;
+      pid["ki_x"] = s.pid_const.ki_x;
+      pid["kd_x"] = s.pid_const.kd_x;
+      pid["kp_y"] = s.pid_const.kp_y;
+      pid["ki_y"] = s.pid_const.ki_y;
+      pid["kd_y"] = s.pid_const.kd_y;
 
-     JsonObject joy = doc["joystick_val"].to<JsonObject>();
-     joy["x"] = s.joystick_val.x;
-     joy["y"] = s.joystick_val.y;
+      JsonObject joy = doc["joystick_val"].to<JsonObject>();
+      joy["x"] = s.joystick_val.x;
+      joy["y"] = s.joystick_val.y;
 
-     doc["time"]     = s.time;
-     doc["ctr_mode"] = s.ctr_mode;
+      doc["time"]     = s.time;
+      doc["ctr_mode"] = s.ctr_mode;
 
-     xSemaphoreGive(statusMutex);
+      doc["device_id"] = s.device_id;
+      doc["firmware"]  = s.firmware;
+      JsonObject fs = doc["field_size"].to<JsonObject>();
+      fs["width"]  = s.field_size.width;
+      fs["height"] = s.field_size.height;
+
+
+      xSemaphoreGive(statusMutex);
   }
 
   String output;
@@ -358,26 +365,26 @@ void updateStatusFromJoystick(XboxControlsEvent e) {
       }
       //왼쪽 위 130,80
       if (e.buttonX) {
-         status.target_pose.x = -110;
-         status.target_pose.y = 60;
+         status.target_pose.x = -80;
+         status.target_pose.y = 40;
          Serial.println("[Joystick] Target pose set to (130,80) by X");
       }
       //오른쪽 위 -130, 80
       if (e.buttonY) {
-         status.target_pose.x = 110;
-         status.target_pose.y = 60;
+         status.target_pose.x = 80;
+         status.target_pose.y = 40;
          Serial.println("[Joystick] Target pose set to (-130,80) by Y");
       }
       //왼쪽 아래 130, -100
       if (e.buttonA) {
-         status.target_pose.x = -110;
-         status.target_pose.y = -60;
+         status.target_pose.x = -80;
+         status.target_pose.y = -40;
          Serial.println("[Joystick] Target pose reset to (0, -100) by A");
       }
       //오른쪽 아래 -130, -100
       if (e.buttonB) {
-         status.target_pose.x = 110;
-         status.target_pose.y = -60;
+         status.target_pose.x = 80;
+         status.target_pose.y = -40;
          Serial.println("[Joystick] Target pose reset to (-130, -100) by B");
       }
 
@@ -395,8 +402,8 @@ void updateStatusFromJoystick(XboxControlsEvent e) {
          float newY = status.target_pose.y + deltaY;
 
          // 범위 클리핑
-         newX = clip2(newX, -MAX_TARGET_X, MAX_TARGET_X);
-         newY = clip2(newY, -MAX_TARGET_Y, MAX_TARGET_Y);
+         newX = clip2(newX, -MAX_TARGET_X*0.7, MAX_TARGET_X*0.7);
+         newY = clip2(newY, -MAX_TARGET_Y*0.7, MAX_TARGET_Y*0.7);
 
          status.target_pose.x = (int16_t)newX;
          status.target_pose.y = (int16_t)newY;
